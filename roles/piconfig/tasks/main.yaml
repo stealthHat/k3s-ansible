@@ -1,0 +1,4 @@
+- name: Update the mirrolist
+  copy:
+    src:  ../files/sources.list
+    dest: /etc/apt/sources.list
