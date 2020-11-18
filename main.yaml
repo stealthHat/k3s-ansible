@@ -1,0 +1,6 @@
+---
+- hosts: pie
+  become: yes
+  roles:
+    - piconfig 
+    - pihole
