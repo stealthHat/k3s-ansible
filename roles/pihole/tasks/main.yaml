@@ -1,0 +1,11 @@
+---
+- name: Install Pi Hole
+  shell: curl -sSL https://install.pi-hole.net | bash
+
+- name: Adds a Filter List
+  copy:
+    src:  ../files/adlists.list
+    dest: /etc/pihole/adlists.list
+
+- name: Reload Pi Hole 
+  shell: pihole -g
