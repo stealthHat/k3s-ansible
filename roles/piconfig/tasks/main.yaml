@@ -7,6 +7,10 @@
     src:  ../files/sources.list
     dest: /etc/apt/sources.list
 
+- name: Set timezone to America/Sao_Paulo
+  timezone:
+    name: America/Sao_Paulo
+
 - name: Update APT package cache
   action: apt update_cache=yes
 
