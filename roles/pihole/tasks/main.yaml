@@ -1,11 +1,17 @@
 ---
-- name: Install Pi Hole
-  shell: curl -sSL https://install.pi-hole.net | bash
-
 - name: Adds a Filter List
   copy:
     src:  ../files/adlists.list
     dest: /etc/pihole/adlists.list
+
+- name: Download Pi Hole Installer
+  get_url: url=https://raw.githubusercontent.com/pi-hole/pi-hole/master/automated%20install/basic-install.sh dest=/tmp/basic-install.sh
+
+- name: Execute the Pi Hole Install
+  shell: /tmp/basic-install.sh 
+
+- name: Remove the Install Script
+  file: path=/tmp/basic-install.sh state=absent
 
 - name: Reload Pi Hole 
   shell: pihole -g
