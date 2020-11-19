@@ -1,15 +1,57 @@
 ---
-- name: Update the mirrolist
-  copy:
-    src:  ../files/sources.list
-    dest: /etc/apt/sources.list
+- name: Disable swap on Raspbian
+  apt:
+    name: dphys-swapfile
+    state: absent
+    purge: yes
 
 - name: Set timezone to America/Sao_Paulo
   timezone:
     name: America/Sao_Paulo
 
-- name: Update APT package cache
-  action: apt update_cache=yes
+- name: Ensure GB-UTF8 locale exists
+  locale_gen:
+    name: en_GB.UTF-8
+    state: present
 
-- name: Upgrade APT to the lastest packages
-  action: apt upgrade=safe
+- name: Update and Upgrade system
+    apt:
+      autoremove: yes
+      update_cache: yes
+      upgrade: dist
+
+- name: Disable HDMI
+  lineinfile:
+    dest: /etc/rc.local
+    regexp: "^/usr/bin/tvservice"
+    line: "/usr/bin/tvservice -o"
+    insertbefore: "^exit"
+    state: present
+
+- name: Enable container features
+  replace:
+    path: /boot/cmdline.txt
+    regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
+    replace: '\1 {{ item }}'
+  with_items:
+  - "cgroup_enable=cpuset"
+  - "cgroup_memory=1"
+  - "cgroup_enable=memory"
+
+- name: Update the mirrolist
+  copy:
+    src:  ../files/sources.list
+    dest: /etc/apt/sources.list
+
+- name: Update the mirrolist
+  copy:
+    src:  $HOME/git/.dotfiles/home/.config/zsh/.zsh_aliases
+    dest: ~/
+
+- name: Source de Alias
+  shell: source ~/.zsh_aliases
+
+- name: Restart to finalize the changes
+  reboot:
+    reboot_timeout: 60
+    post_reboot_delay: 15
