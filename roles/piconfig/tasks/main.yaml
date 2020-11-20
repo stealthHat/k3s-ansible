@@ -43,13 +43,13 @@
     src:  ../files/sources.list
     dest: /etc/apt/sources.list
 
-- name: Update the mirrolist
+- name: Copy Alias to Host
   copy:
-    src:  $HOME/git/.dotfiles/home/.config/zsh/.zsh_aliases
-    dest: ~/
+    src:  ../files/.zshalias
+    dest: /home/pi/.zshalias
 
 - name: Source de Alias
-  shell: source ~/.zsh_aliases
+  shell: . /home/pi/.zshalias
 
 - name: Restart to finalize the changes
   reboot:
