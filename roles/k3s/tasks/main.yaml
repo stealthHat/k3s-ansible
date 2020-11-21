@@ -1,26 +1,26 @@
 ---
-  - name: Install K3s in master
-    shell: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v0.9.1 sh -
-    environment:
-      K3S_KUBECONFIG_MODE: "644"
-      INSTALL_K3S_EXEC: " --disable servicelb --disable traefik --cluster-init"
-      K3S_TOKEN: "hb7g89453thnj5io42n9y2890omthd5o2klfm39t0v54mnjgvkl54"
+- name: Install K3s in master
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v0.9.1 sh -
+  environment:
+    K3S_KUBECONFIG_MODE: "644"
+    K3S_TOKEN: "hb7g89453thnj5io42n9y2890omthd5o2klfm39t0v54mnjgvkl54"
 
-  - name: Read node-token from master
-    slurp:
-      src: /var/lib/rancher/k3s/server/node-token
-    register: node_token
+- name: Read node-token from master
+  slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: node_token
 
-  - name: Store Master node-token
-    set_fact:
-      token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+- name: Store Master node-token
+  set_fact:
+    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
 
-  - name: Copy Kubeconfig to local
-    fetch:
-      dest: /home/pi/.kube/config/k3s.yaml
-      src: /etc/rancher/k3s/k3s.yaml
-      flat: yes
+- name: Copy Kubeconfig to local
+  become: yes
+  fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~/.kube/config
+    flat: yes
 
-  - name: Wait to completely load K3s
-    wait_for:
-      timeout: 20
+- name: Wait to completely load K3s
+  wait_for:
+    timeout: 20
