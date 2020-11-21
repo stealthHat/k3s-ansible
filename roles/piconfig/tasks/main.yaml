@@ -15,10 +15,10 @@
     state: present
 
 - name: Update and Upgrade system
-    apt:
-      autoremove: yes
-      update_cache: yes
-      upgrade: dist
+  apt:
+    autoremove: yes
+    update_cache: yes
+    upgrade: dist
 
 - name: Disable HDMI
   lineinfile:
@@ -38,6 +38,23 @@
   - "cgroup_memory=1"
   - "cgroup_enable=memory"
 
+- name: Flush iptables before changing to iptables-legacy
+  iptables:
+    flush: true
+  changed_when: false   
+
+- name: Changing to iptables-legacy
+  alternatives:
+    path: /usr/sbin/iptables-legacy
+    name: iptables
+  register: ip4_legacy
+
+- name: Changing to ip6tables-legacy
+  alternatives:
+    path: /usr/sbin/ip6tables-legacy
+    name: ip6tables
+  register: ip6_legacy
+
 - name: Update the mirrolist
   copy:
     src:  ../files/sources.list
@@ -49,7 +66,7 @@
     dest: /home/pi/.zshalias
 
 - name: Source de Alias
-  shell: . /home/pi/.zshalias
+  shell: echo source /home/pi/.zshalias >> /home/pi/.profile
 
 - name: Restart to finalize the changes
   reboot:
