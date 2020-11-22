@@ -1,0 +1,5 @@
+---
+- name: reboot
+  reboot:
+    reboot_timeout: 60
+    post_reboot_delay: 15

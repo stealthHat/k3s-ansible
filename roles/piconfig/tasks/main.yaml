@@ -1,9 +1,8 @@
 ---
-- name: Disable swap on Raspbian
-  apt:
-    name: dphys-swapfile
-    state: absent
-    purge: yes
+- name: Update the mirrolist
+  copy:
+    src:  ../files/sources.list
+    dest: /etc/apt/sources.list
 
 - name: Set timezone to America/Sao_Paulo
   timezone:
@@ -14,11 +13,11 @@
     name: en_GB.UTF-8
     state: present
 
-- name: Update and Upgrade system
+- name: Disable swap on Raspbian
   apt:
-    autoremove: yes
-    update_cache: yes
-    upgrade: dist
+    name: dphys-swapfile
+    state: absent
+    purge: yes
 
 - name: Disable HDMI
   lineinfile:
@@ -27,16 +26,26 @@
     line: "/usr/bin/tvservice -o"
     insertbefore: "^exit"
     state: present
+    
+- name: Update and Upgrade system
+  apt:
+    autoremove: yes
+    update_cache: yes
+    upgrade: dist
+  notify: reboot
 
-- name: Enable container features
-  replace:
+- name: Activating cgroup support
+  lineinfile:
     path: /boot/cmdline.txt
-    regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
-    replace: '\1 {{ item }}'
-  with_items:
-  - "cgroup_enable=cpuset"
-  - "cgroup_memory=1"
-  - "cgroup_enable=memory"
+    regexp: '^((?!.*\bcgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory\b).*)$'
+    line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
+    backrefs: true
+  notify: reboot
+
+- name: Restart to finalize the changes
+  reboot:
+    reboot_timeout: 60
+    post_reboot_delay: 15
 
 - name: Flush iptables before changing to iptables-legacy
   iptables:
@@ -55,10 +64,19 @@
     name: ip6tables
   register: ip6_legacy
 
-- name: Update the mirrolist
-  copy:
-    src:  ../files/sources.list
-    dest: /etc/apt/sources.list
+- name: Enable IPv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: yes
+
+- name: Enable IPv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    state: present
+    reload: yes
 
 - name: Copy Alias to Host
   copy:
