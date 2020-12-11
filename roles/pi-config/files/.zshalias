@@ -11,5 +11,6 @@ alias \
   sc='sudo systemctl' \
   diff='diff --color=auto' \
   k='kubectl' \
-  sc='sudo sysctemctl' \
+  sc='sudo systemctl' \
   h='helm' \
+  j='journalctl' \
