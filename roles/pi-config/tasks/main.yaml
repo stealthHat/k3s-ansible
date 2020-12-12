@@ -32,7 +32,6 @@
     autoremove: yes
     update_cache: yes
     upgrade: dist
-  notify: reboot
 
 - name: Activating cgroup support
   lineinfile:
@@ -40,7 +39,6 @@
     regexp: '^((?!.*\bcgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory\b).*)$'
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
     backrefs: true
-  notify: reboot
 
 - name: Restart to finalize the changes
   reboot:
