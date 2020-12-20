@@ -1,4 +1,8 @@
 ---
+- name: Set hostname to inventory hostname
+  hostname: 
+    name: {{inventory_hostname}}
+
 - name: Update the mirrolist
   copy:
     src:  ../files/sources.list
@@ -40,10 +44,8 @@
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
     backrefs: true
 
-- name: Restart to finalize the changes
-  reboot:
-    reboot_timeout: 60
-    post_reboot_delay: 15
+- name: Reboot if necessary
+  meta: flush_handlers
 
 - name: Flush iptables before changing to iptables-legacy
   iptables:
@@ -84,7 +86,5 @@
 - name: Source de Alias
   shell: echo source /home/pi/.zshalias >> /home/pi/.profile
 
-- name: Restart to finalize the changes
-  reboot:
-    reboot_timeout: 60
-    post_reboot_delay: 15
+- name: Reboot if necessary
+  meta: flush_handlers
