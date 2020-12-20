@@ -31,53 +31,6 @@
     insertbefore: "^exit"
     state: present
     
-- name: Update and Upgrade system
-  apt:
-    autoremove: yes
-    update_cache: yes
-    upgrade: dist
-
-- name: Activating cgroup support
-  lineinfile:
-    path: /boot/cmdline.txt
-    regexp: '^((?!.*\bcgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory\b).*)$'
-    line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
-    backrefs: true
-
-- name: Reboot if necessary
-  meta: flush_handlers
-
-- name: Flush iptables before changing to iptables-legacy
-  iptables:
-    flush: true
-  changed_when: false   
-
-- name: Changing to iptables-legacy
-  alternatives:
-    path: /usr/sbin/iptables-legacy
-    name: iptables
-  register: ip4_legacy
-
-- name: Changing to ip6tables-legacy
-  alternatives:
-    path: /usr/sbin/ip6tables-legacy
-    name: ip6tables
-  register: ip6_legacy
-
-- name: Enable IPv4 forwarding
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: "1"
-    state: present
-    reload: yes
-
-- name: Enable IPv6 forwarding
-  sysctl:
-    name: net.ipv6.conf.all.forwarding
-    value: "1"
-    state: present
-    reload: yes
-
 - name: Copy Alias to Host
   copy:
     src:  ../files/.zshalias
@@ -86,5 +39,9 @@
 - name: Source de Alias
   shell: echo source /home/pi/.zshalias >> /home/pi/.profile
 
-- name: Reboot if necessary
-  meta: flush_handlers
+- name: Update and Upgrade system
+  apt:
+    autoremove: yes
+    update_cache: yes
+    upgrade: dist
+  notify: Reboot
