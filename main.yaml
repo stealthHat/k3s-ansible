@@ -6,18 +6,10 @@
 
 - hosts: sun 
   become: yes 
-  tasks:
-    - name: Set a hostname
-      hostname:
-        name: sun
   roles:
     - k3s
 
 - hosts: earth
   become: yes 
-  tasks:
-    - name: Set a hostname
-      hostname:
-        name: earth
   roles:
     - k3s-nodes
