@@ -3,6 +3,7 @@
   become: yes
   roles:
     - pi-config
+    - k3s-config
 
 - hosts: sun 
   become: yes 
