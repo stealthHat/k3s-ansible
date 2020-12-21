@@ -1,0 +1,5 @@
+---
+k3s_version: v1.17.5+k3s1
+systemd_dir: /etc/systemd/system
+master_ip: 192.168.15.190
+extra_server_args: ""

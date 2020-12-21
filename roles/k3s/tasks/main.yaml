@@ -1,10 +1,42 @@
 ---
-- name: Install K3s in master
-  shell: curl -sfL https://get.k3s.io | sh -
-  environment:
-    INSTALL_K3S_EXEC: "--cluster-cidr=192.168.25.0/16"
-    K3S_KUBECONFIG_MODE: "644"
-    K3S_TOKEN: "hb7g89453thnj5io42n9y2890omthd5o2klfm39t0v54mnjgvkl54"
+- name: Download k3s binary arm64
+  get_url:
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s-arm64
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-arm64.txt
+    dest: /usr/local/bin/k3s
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy K3s service file
+  register: k3s_service
+  template:
+    src: "k3s.service.j2"
+    dest: "{{ systemd_dir }}/k3s.service"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Enable and check K3s service
+  systemd:
+    name: k3s
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Wait for node-token
+  wait_for:
+    path: /var/lib/rancher/k3s/server/node-token
+
+- name: Register node-token file access mode
+  stat:
+    path: /var/lib/rancher/k3s/server
+  register: p
+
+- name: Change file access node-token
+  file:
+    path: /var/lib/rancher/k3s/server
+    mode: "g+rx,o+rx"
 
 - name: Read node-token from master
   slurp:
@@ -15,6 +47,18 @@
   set_fact:
     token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
 
+- name: Restore node-token file access
+  file:
+    path: /var/lib/rancher/k3s/server
+    mode: "{{ p.stat.mode }}"
+
+- name: Replace https://localhost:6443 by https://master-ip:6443
+  command: >-
+    k3s kubectl config set-cluster default
+      --server=https://{{ master_ip }}:6443
+      --kubeconfig ~{{ ansible_user }}/.kube/config
+  changed_when: true
+
 - name: Copy Kubeconfig to local
   become: yes
   fetch:
@@ -22,6 +66,3 @@
     dest: ~/.kube/config
     flat: yes
 
-- name: Wait to completely load K3s
-  wait_for:
-    timeout: 20
