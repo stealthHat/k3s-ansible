@@ -1,7 +1,7 @@
 ---
 - name: Set hostname to inventory hostname
   hostname: 
-    name: {{inventory_hostname}}
+    name: "{{inventory_hostname}}"
 
 - name: Update the mirrolist
   copy:
