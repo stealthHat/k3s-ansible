@@ -3,10 +3,20 @@
   hostname: 
     name: "{{inventory_hostname}}"
 
+- name: Set hosts file
+  lineinfile:
+    path: /etc/hosts
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: present
+  with_items:
+    - { regexp: '127\.0\.1\.1.*', line: '127.0.1.1 {{ ansible_hostname }}' }
+
 - name: Update the mirrolist
   copy:
     src:  ../files/sources.list
     dest: /etc/apt/sources.list
+  when: ansible_hostname == 'earth'
 
 - name: Set timezone to America/Sao_Paulo
   timezone:
@@ -16,12 +26,6 @@
   locale_gen:
     name: en_GB.UTF-8
     state: present
-
-- name: Disable swap on Raspbian
-  apt:
-    name: dphys-swapfile
-    state: absent
-    purge: yes
 
 - name: Disable HDMI
   lineinfile:
@@ -44,4 +48,10 @@
     autoremove: yes
     update_cache: yes
     upgrade: dist
+
+- name: Disable swap on Raspbian
+  apt:
+    name: dphys-swapfile
+    state: absent
+    purge: yes
   notify: Reboot
