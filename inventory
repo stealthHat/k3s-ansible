@@ -1,0 +1,5 @@
+[all]
+sun  hostname=sun
+
+[sun]
+sun  hostname=sun
