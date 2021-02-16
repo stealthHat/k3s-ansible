@@ -7,3 +7,6 @@
  - k3s-node : Adds nodes to the control plane 
 
 To run add the master and nodes ips to a inventory file and run it with ansible :)
+
+# [DEPRECATED]
+  im using [this](https://github.com/stealthHat/k8s-ansible) repo for my raspberry cluster.
